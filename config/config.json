@@ -1,0 +1,113 @@
+{
+  "server": {
+    "host": "localhost",
+    "port": 8001,
+    "max_connections": 100,
+    "request_timeout_ms": 30000,
+    "response_timeout_ms": 30000,
+    "enable_cors": true,
+    "cors_origins": ["*"],
+    "max_request_size_mb": 100
+  },
+  "storage": {
+    "data_directory": "data",
+    "chunk_size_bytes": 262144,
+    "max_file_size_mb": 1024,
+    "compression_enabled": true,
+    "compression_level": 6,
+    "shard_count": 256,
+    "enable_deduplication": true,
+    "cleanup_interval_hours": 24
+  },
+  "database": {
+    "leveldb": {
+      "write_buffer_size_mb": 4,
+      "max_file_size_mb": 2,
+      "compression": "snappy",
+      "paranoid_checks": false,
+      "block_cache_size_mb": 8,
+      "bloom_filter_bits": 10,
+      "max_open_files": 1000,
+      "sync_writes": false
+    },
+    "connection_pool": {
+      "max_connections": 10,
+      "min_connections": 2,
+      "connection_timeout_ms": 5000,
+      "idle_timeout_ms": 300000,
+      "max_retries": 3,
+      "retry_delay_ms": 1000
+    }
+  },
+  "logging": {
+    "level": "INFO",
+    "file_path": "logs/qfs.log",
+    "max_file_size_mb": 10,
+    "max_files": 5,
+    "enable_console": true,
+    "enable_json": false,
+    "timestamp_format": "ISO8601"
+  },
+  "security": {
+    "enable_authentication": false,
+    "api_key_required": false,
+    "rate_limiting": {
+      "enabled": true,
+      "requests_per_minute": 60,
+      "burst_size": 10,
+      "cleanup_interval_minutes": 5
+    },
+    "upload_restrictions": {
+      "max_filename_length": 255,
+      "allowed_extensions": [".txt", ".json", ".csv", ".log", ".md", ".xml", ".yaml", ".yml"],
+      "blocked_extensions": [".exe", ".bat", ".sh", ".ps1", ".cmd"],
+      "scan_for_malware": false
+    }
+  },
+  "performance": {
+    "threading": {
+      "worker_threads": 4,
+      "io_threads": 2,
+      "enable_thread_pool": true
+    },
+    "caching": {
+      "enable_memory_cache": true,
+      "cache_size_mb": 64,
+      "cache_ttl_minutes": 30,
+      "enable_chunk_cache": true,
+      "chunk_cache_size_mb": 32
+    },
+    "timeouts": {
+      "upload_timeout_ms": 60000,
+      "download_timeout_ms": 30000,
+      "update_timeout_ms": 120000,
+      "delete_timeout_ms": 30000,
+      "chunk_timeout_ms": 10000,
+      "list_timeout_ms": 5000
+    }
+  },
+  "monitoring": {
+    "enable_metrics": true,
+    "metrics_endpoint": "/metrics",
+    "health_check_interval_seconds": 30,
+    "storage_usage_alert_percent": 90,
+    "memory_usage_alert_percent": 85,
+    "enable_profiling": false
+  },
+  "backup": {
+    "enable_auto_backup": false,
+    "backup_interval_hours": 6,
+    "backup_directory": "backups",
+    "max_backup_files": 10,
+    "compress_backups": true
+  },
+  "development": {
+    "debug_mode": false,
+    "verbose_logging": false,
+    "enable_hot_reload": false,
+    "mock_responses": false,
+    "test_data_path": "test_data"
+  },
+  "version": "1.0.0",
+  "environment": "production"
+}
