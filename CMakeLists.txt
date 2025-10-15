@@ -166,6 +166,9 @@ endif()
 message(STATUS "===============================================")
 message(STATUS "")
 
+# Add Bootstrap Node as subdirectory
+add_subdirectory(bootstrap_node)
+
 # Additional build targets
 add_custom_target(clean-data
     COMMAND ${CMAKE_COMMAND} -E remove_directory ${CMAKE_BINARY_DIR}/data
@@ -181,13 +184,19 @@ add_custom_target(help-build
     COMMAND ${CMAKE_COMMAND} -E echo ""
     COMMAND ${CMAKE_COMMAND} -E echo "QFS Build Help:"
     COMMAND ${CMAKE_COMMAND} -E echo "==============="
-    COMMAND ${CMAKE_COMMAND} -E echo "make qfs         - Build the QFS executable"
-    COMMAND ${CMAKE_COMMAND} -E echo "make install     - Install QFS to system"
-    COMMAND ${CMAKE_COMMAND} -E echo "make clean       - Clean build files"
-    COMMAND ${CMAKE_COMMAND} -E echo "make clean-data  - Clean data directories"
+    COMMAND ${CMAKE_COMMAND} -E echo "make qfs              - Build the QFS Node executable"
+    COMMAND ${CMAKE_COMMAND} -E echo "make qfs-bootstrap    - Build the Bootstrap Node executable"
+    COMMAND ${CMAKE_COMMAND} -E echo "make                  - Build both QFS and Bootstrap Node"
+    COMMAND ${CMAKE_COMMAND} -E echo "make install          - Install to system"
+    COMMAND ${CMAKE_COMMAND} -E echo "make clean            - Clean build files"
+    COMMAND ${CMAKE_COMMAND} -E echo "make clean-data       - Clean data directories"
     COMMAND ${CMAKE_COMMAND} -E echo ""
-    COMMAND ${CMAKE_COMMAND} -E echo "To run QFS:"
-    COMMAND ${CMAKE_COMMAND} -E echo "./qfs            - Start with default settings"
-    COMMAND ${CMAKE_COMMAND} -E echo "./qfs --help     - Show usage information"
+    COMMAND ${CMAKE_COMMAND} -E echo "To run QFS Node:"
+    COMMAND ${CMAKE_COMMAND} -E echo "./qfs                 - Start with default settings"
+    COMMAND ${CMAKE_COMMAND} -E echo "./qfs --help          - Show usage information"
+    COMMAND ${CMAKE_COMMAND} -E echo ""
+    COMMAND ${CMAKE_COMMAND} -E echo "To run Bootstrap Node:"
+    COMMAND ${CMAKE_COMMAND} -E echo "./qfs-bootstrap       - Start with default settings"
+    COMMAND ${CMAKE_COMMAND} -E echo "./qfs-bootstrap --help - Show usage information"
     COMMAND ${CMAKE_COMMAND} -E echo ""
 )

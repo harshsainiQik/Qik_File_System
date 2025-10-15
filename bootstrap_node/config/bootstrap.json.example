@@ -1,0 +1,52 @@
+{
+  "_comment": "QFS Bootstrap Node Configuration Example",
+  "_description": "Copy this file to bootstrap.json and customize as needed",
+
+  "server": {
+    "_comment": "HTTP server configuration",
+    "port": 8090,
+    "host": "0.0.0.0",
+    "max_connections": 1000,
+    "timeout_seconds": 30
+  },
+
+  "logging": {
+    "_comment": "Logging configuration",
+    "level": "info",
+    "file": "data/logs/bootstrap.log",
+    "console": true,
+    "max_file_size_mb": 100,
+    "max_files": 5
+  },
+
+  "registry": {
+    "_comment": "Provider registry configuration",
+    "cleanup_interval": 300,
+    "provider_timeout": 600,
+    "max_providers_per_cid": 100,
+    "enable_cache": true,
+    "cache_ttl": 300
+  },
+
+  "performance": {
+    "_comment": "Performance tuning",
+    "worker_threads": 4,
+    "max_request_size_kb": 64,
+    "enable_compression": false
+  },
+
+  "security": {
+    "_comment": "Security settings (future implementation)",
+    "enable_authentication": false,
+    "enable_rate_limiting": false,
+    "max_requests_per_minute": 1000,
+    "allowed_ips": []
+  },
+
+  "monitoring": {
+    "_comment": "Monitoring and metrics (future implementation)",
+    "enable_metrics": false,
+    "metrics_port": 8091,
+    "health_check_interval": 60
+  }
+}

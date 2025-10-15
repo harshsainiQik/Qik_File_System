@@ -3,6 +3,9 @@ build/
 cmake-build-*/
 out/
 
+# Documentation and planning (internal)
+spec/
+
 # CMake
 CMakeCache.txt
 CMakeFiles/
