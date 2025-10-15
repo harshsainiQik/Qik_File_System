@@ -47,14 +47,15 @@ else()
     message(FATAL_ERROR "cpp-httplib not found in third_party/cpp-httplib/. Please ensure httplib.h is in that directory.")
 endif()
 
-# Source files (currently just main.cpp)
+# Source files
 set(BOOTSTRAP_SOURCES
     src/main.cpp
+    src/bootstrap_server.cpp
 )
 
 # Header files (for IDE support)
 set(BOOTSTRAP_HEADERS
-    # Will add headers as we create them
+    include/bootstrap_server.h
 )
 
 # Create executable

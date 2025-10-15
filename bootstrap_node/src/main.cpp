@@ -11,9 +11,15 @@
  * @version 1.0.0
  */
 
+#include "bootstrap_server.h"
 #include <iostream>
 #include <string>
 #include <cstdlib>
+#include <csignal>
+#include <memory>
+
+// Global pointer for signal handler
+std::unique_ptr<qfs::BootstrapServer> g_server;
 
 // Version information
 const std::string VERSION = "1.0.0";
@@ -99,6 +105,16 @@ Config parseArguments(int argc, char* argv[]) {
 }
 
 /**
+ * Signal handler for graceful shutdown
+ */
+void signalHandler(int signal) {
+    std::cout << "\n[INFO] Received signal " << signal << std::endl;
+    if (g_server) {
+        g_server->stop();
+    }
+}
+
+/**
  * Main entry point
  */
 int main(int argc, char* argv[]) {
@@ -125,7 +141,6 @@ int main(int argc, char* argv[]) {
     std::cout << "\n";
 
     // Print configuration
-    std::cout << "[INFO] Starting Bootstrap Node...\n";
     std::cout << "[INFO] Configuration:\n";
     std::cout << "[INFO]   Host: " << config.host << "\n";
     std::cout << "[INFO]   Port: " << config.port << "\n";
@@ -139,27 +154,36 @@ int main(int argc, char* argv[]) {
     }
 
     std::cout << "\n";
-    std::cout << "[INFO] Bootstrap Node initialized successfully!\n";
-    std::cout << "[INFO] This is a placeholder implementation.\n";
-    std::cout << "[INFO] Full HTTP server and provider registry coming in next tasks.\n";
-    std::cout << "\n";
-    std::cout << "[INFO] Expected endpoints (future):\n";
-    std::cout << "[INFO]   GET  /health            - Health check\n";
-    std::cout << "[INFO]   POST /announce          - Register as provider\n";
-    std::cout << "[INFO]   GET  /discover/<cid>    - Find providers\n";
-    std::cout << "\n";
-    std::cout << "[SUCCESS] Bootstrap Node would be running at http://"
-              << config.host << ":" << config.port << "\n";
-    std::cout << "[INFO] Press Ctrl+C to stop (in future implementation)\n";
-    std::cout << "\n";
 
-    // Placeholder: In next tasks, we'll add:
-    // 1. HTTP server initialization
-    // 2. Provider registry setup
-    // 3. API endpoint handlers
-    // 4. Signal handling for graceful shutdown
+    try {
+        // Create Bootstrap Server
+        g_server = std::make_unique<qfs::BootstrapServer>(config.host, config.port);
 
-    std::cout << "[INFO] Exiting placeholder implementation.\n";
+        // Setup signal handlers for graceful shutdown
+        std::signal(SIGINT, signalHandler);   // Ctrl+C
+        std::signal(SIGTERM, signalHandler);  // Termination signal
+
+        std::cout << "[INFO] Signal handlers registered (Ctrl+C for graceful shutdown)\n";
+        std::cout << "\n";
+
+        // Start the HTTP server (blocking call)
+        bool success = g_server->start();
+
+        if (!success) {
+            std::cerr << "[ERROR] Failed to start Bootstrap Node server\n";
+            return 1;
+        }
+
+    } catch (const std::exception& e) {
+        std::cerr << "[ERROR] Exception: " << e.what() << std::endl;
+        return 1;
+    } catch (...) {
+        std::cerr << "[ERROR] Unknown exception occurred\n";
+        return 1;
+    }
+
+    std::cout << "[INFO] Bootstrap Node shutdown complete\n";
+    std::cout << "[INFO] Goodbye!\n";
 
     return 0;
 }
