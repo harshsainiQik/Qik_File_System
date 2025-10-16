@@ -51,11 +51,13 @@ endif()
 set(BOOTSTRAP_SOURCES
     src/main.cpp
     src/bootstrap_server.cpp
+    src/provider_registry.cpp
 )
 
 # Header files (for IDE support)
 set(BOOTSTRAP_HEADERS
     include/bootstrap_server.h
+    include/provider_registry.h
 )
 
 # Create executable
