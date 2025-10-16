@@ -18,6 +18,7 @@
 #include <atomic>
 #include <chrono>
 #include "../third_party/cpp-httplib/httplib.h"
+#include "provider_registry.h"
 
 namespace qfs {
 
@@ -99,6 +100,21 @@ private:
     void handleHealth(const httplib::Request& req, httplib::Response& res);
 
     /**
+     * Handle POST /announce requests
+     *
+     * Registers a provider for a specific CID. Expects JSON body with:
+     * - cid: Content identifier
+     * - nodeId: Unique node identifier
+     * - ip: Node IP address
+     * - port: Node port number
+     * - bandwidth: Available bandwidth
+     *
+     * @param req HTTP request object
+     * @param res HTTP response object
+     */
+    void handleAnnounce(const httplib::Request& req, httplib::Response& res);
+
+    /**
      * Handle 404 Not Found errors
      *
      * Returns a friendly error message for unknown endpoints.
@@ -132,6 +148,7 @@ private:
     std::unique_ptr<httplib::Server> server_;       // HTTP server instance
     std::atomic<bool> running_;                     // Server running state
     std::chrono::steady_clock::time_point startTime_; // Server start time
+    ProviderRegistry registry_;                     // Provider registry for tracking providers
 };
 
 } // namespace qfs

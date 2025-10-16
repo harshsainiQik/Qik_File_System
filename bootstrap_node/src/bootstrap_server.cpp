@@ -10,6 +10,9 @@
 #include <iostream>
 #include <sstream>
 #include <iomanip>
+#include <nlohmann-json/json.hpp>
+
+using json = nlohmann::json;
 
 namespace qfs {
 
@@ -54,8 +57,15 @@ void BootstrapServer::setupRoutes() {
 
     std::cout << "[INFO]   GET  /health - Health check" << std::endl;
 
+    // POST /announce - Provider announcement endpoint
+    server_->Post("/announce", [this](const httplib::Request& req, httplib::Response& res) {
+        handleAnnounce(req, res);
+        logRequest(req, res);
+    });
+
+    std::cout << "[INFO]   POST /announce - Provider registration" << std::endl;
+
     // Future endpoints will be added here:
-    // server_->Post("/announce", [...]);
     // server_->Get("/discover/:cid", [...]);
 
     // 404 Not Found handler
@@ -85,14 +95,128 @@ void BootstrapServer::handleHealth(const httplib::Request& /* req */, httplib::R
     json << "  \"service\": \"QFS Bootstrap Node\",\n";
     json << "  \"endpoints\": {\n";
     json << "    \"health\": \"/health\",\n";
-    json << "    \"announce\": \"/announce (coming soon)\",\n";
+    json << "    \"announce\": \"/announce\",\n";
     json << "    \"discover\": \"/discover/:cid (coming soon)\"\n";
+    json << "  },\n";
+    json << "  \"registry\": {\n";
+    json << "    \"totalCIDs\": " << registry_.getTotalCIDs() << ",\n";
+    json << "    \"totalProviders\": " << registry_.getTotalProviders() << "\n";
     json << "  }\n";
     json << "}";
 
     // Set response
     res.set_content(json.str(), "application/json");
     res.status = 200;
+}
+
+// Handle POST /announce
+void BootstrapServer::handleAnnounce(const httplib::Request& req, httplib::Response& res) {
+    try {
+        // Parse JSON from request body
+        json requestData = json::parse(req.body);
+
+        // Extract required fields
+        std::string cid = requestData.value("cid", "");
+        std::string nodeId = requestData.value("nodeId", "");
+        std::string ip = requestData.value("ip", "");
+        int port = requestData.value("port", 0);
+        uint64_t bandwidth = requestData.value("bandwidth", 0);
+
+        // Validate required fields
+        if (cid.empty()) {
+            std::ostringstream json;
+            json << "{\n";
+            json << "  \"status\": \"error\",\n";
+            json << "  \"message\": \"Missing required field: cid\"\n";
+            json << "}";
+            res.set_content(json.str(), "application/json");
+            res.status = 400;  // Bad Request
+            return;
+        }
+
+        if (nodeId.empty()) {
+            std::ostringstream json;
+            json << "{\n";
+            json << "  \"status\": \"error\",\n";
+            json << "  \"message\": \"Missing required field: nodeId\"\n";
+            json << "}";
+            res.set_content(json.str(), "application/json");
+            res.status = 400;
+            return;
+        }
+
+        if (ip.empty()) {
+            std::ostringstream json;
+            json << "{\n";
+            json << "  \"status\": \"error\",\n";
+            json << "  \"message\": \"Missing required field: ip\"\n";
+            json << "}";
+            res.set_content(json.str(), "application/json");
+            res.status = 400;
+            return;
+        }
+
+        if (port <= 0 || port > 65535) {
+            std::ostringstream json;
+            json << "{\n";
+            json << "  \"status\": \"error\",\n";
+            json << "  \"message\": \"Invalid port number (must be between 1 and 65535)\"\n";
+            json << "}";
+            res.set_content(json.str(), "application/json");
+            res.status = 400;
+            return;
+        }
+
+        if (bandwidth == 0) {
+            std::ostringstream json;
+            json << "{\n";
+            json << "  \"status\": \"error\",\n";
+            json << "  \"message\": \"Invalid bandwidth (must be greater than 0)\"\n";
+            json << "}";
+            res.set_content(json.str(), "application/json");
+            res.status = 400;
+            return;
+        }
+
+        // Create ProviderInfo and add to registry
+        ProviderInfo provider(nodeId, ip, port, bandwidth);
+        registry_.addProvider(cid, provider);
+
+        // Log the announcement
+        std::cout << "[INFO] Provider announced: " << nodeId
+                  << " (" << ip << ":" << port << ")"
+                  << " for CID: " << cid.substr(0, 12) << "..." << std::endl;
+
+        // Send success response
+        std::ostringstream jsonResponse;
+        jsonResponse << "{\n";
+        jsonResponse << "  \"status\": \"success\",\n";
+        jsonResponse << "  \"message\": \"Provider announced successfully\"\n";
+        jsonResponse << "}";
+
+        res.set_content(jsonResponse.str(), "application/json");
+        res.status = 200;  // OK
+
+    } catch (const json::parse_error& e) {
+        // Handle JSON parsing errors
+        std::ostringstream jsonError;
+        jsonError << "{\n";
+        jsonError << "  \"status\": \"error\",\n";
+        jsonError << "  \"message\": \"Invalid JSON format: " << e.what() << "\"\n";
+        jsonError << "}";
+        res.set_content(jsonError.str(), "application/json");
+        res.status = 400;  // Bad Request
+
+    } catch (const std::exception& e) {
+        // Handle other errors
+        std::ostringstream jsonError;
+        jsonError << "{\n";
+        jsonError << "  \"status\": \"error\",\n";
+        jsonError << "  \"message\": \"Internal server error: " << e.what() << "\"\n";
+        jsonError << "}";
+        res.set_content(jsonError.str(), "application/json");
+        res.status = 500;  // Internal Server Error
+    }
 }
 
 // Handle 404 Not Found
